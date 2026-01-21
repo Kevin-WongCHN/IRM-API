@@ -1,0 +1,189 @@
+openapi: 3.0.0
+info:
+  title: IRM Platform API
+  description: 需求管理平台 (IRM-Platform) 的后端接口定义。
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: 本地开发服务器
+
+tags:
+  - name: 需求定义
+    description: 需求的增删改查接口
+  - name: 项目管理
+    description: 项目管理相关接口
+  - name: 基线管理
+    description: 基线管理相关接口
+  - name: 在线评审
+    description: 在线评审相关接口
+  - name: 需求确认
+    description: 需求确认相关接口
+  - name: 需求验证
+    description: 需求验证相关接口
+  - name: 变更管理
+    description: 变更管理相关接口
+
+paths:
+  /api/requirements:
+    get:
+      tags: [需求定义]
+      summary: 获取需求列表
+      description: 可以根据文档 ID 筛选需求，或者获取所有需求。
+      parameters:
+        - name: documentId
+          in: query
+          description: 文档的唯一标识符
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取需求列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Requirement'
+    post:
+      tags: [需求定义]
+      summary: 保存单个需求
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Requirement'
+      responses:
+        '200':
+          description: 需求保存成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Requirement'
+
+  /api/requirements/batch:
+    post:
+      tags: [需求定义]
+      summary: 批量保存需求
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Requirement'
+      responses:
+        '200':
+          description: 批量保存成功
+
+  /api/requirements/{id}:
+    delete:
+      tags: [需求定义]
+      summary: 删除指定需求
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 需求的 ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 需求删除成功
+
+  /api/config/{id}:
+    get:
+      tags: [需求定义]
+      summary: 获取项目配置
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 配置的 ID (例如 'default')
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取配置
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectConfig'
+
+  /api/config:
+    post:
+      tags: [需求定义]
+      summary: 保存项目配置
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectConfig'
+      responses:
+        '200':
+          description: 配置保存成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectConfig'
+
+components:
+  schemas:
+    Requirement:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 需求唯一标识符
+        parentId:
+          type: string
+          nullable: true
+          description: 父级需求 ID (用于树形结构)
+        numId:
+          type: string
+          description: 需求编号 (如 1.1)
+        type:
+          type: string
+          enum: [heading, text]
+          description: 需求类型 (标题或文本)
+        documentId:
+          type: string
+          description: 所属文档 ID
+        content:
+          type: string
+          description: 需求内容 (支持长文本)
+        attributes:
+          type: string
+          description: 扩展属性 (JSON 字符串，包含状态、负责人等)
+      example:
+        id: "srs-t1"
+        parentId: "srs-h1"
+        numId: "1.1"
+        type: "text"
+        documentId: "file-1"
+        content: "智能座舱系统应集成语音识别功能。"
+        attributes: "[{\"name\":\"状态\",\"value\":\"进行中\"}]"
+
+    ProjectConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 配置唯一标识符
+        docConfig:
+          type: string
+          description: 文档元数据配置 (JSON 字符串)
+        customTypes:
+          type: string
+          description: 自定义类型定义 (JSON 字符串)
+        projectMembers:
+          type: string
+          description: 项目成员列表 (JSON 字符串)
+      example:
+        id: "default"
+        docConfig: "{\"attributes\":[{\"name\":\"文档名称\",\"value\":\"SRS\"}]}"
+        projectMembers: "[{\"id\":\"m1\",\"name\":\"Kevin Wu\"}]"
+        customTypes: "[{\"id\":\"type-status\",\"name\":\"进行状态\"}]"
