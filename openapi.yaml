@@ -1,4 +1,4 @@
-openapi: 3.0.0
+﻿openapi: 3.0.0
 info:
   title: IRM Platform API
   description: 需求管理平台 (IRM-Platform) 的后端接口定义。
@@ -16,10 +16,8 @@ tags:
     description: 基线管理相关接口
   - name: 在线评审
     description: 在线评审相关接口
-  - name: 需求确认
-    description: 需求确认相关接口
-  - name: 需求验证
-    description: 需求验证相关接口
+  - name: 需求确认与验证
+    description: 需求确认与验证相关接口
   - name: 变更管理
     description: 变更管理相关接口
 
@@ -130,6 +128,340 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProjectConfig'
 
+  # --- 需求确认/验证 (Verification/Confirmation) ---
+  /api/verifications/requests:
+    get:
+      tags: [需求确认与验证]
+      summary: 获取确认/验证申请列表
+      parameters:
+        - name: projectId
+          in: query
+          description: 项目ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: type
+          in: query
+          description: 申请类型 (confirmation 或 verification)
+          required: true
+          schema:
+            type: string
+            enum: [confirmation, verification]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VerificationRequest'
+    post:
+      tags: [需求确认与验证]
+      summary: 创建确认/验证申请
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequest'
+
+  /api/verifications/requests/{requestId}:
+    put:
+      tags: [需求确认与验证]
+      summary: 更新确认/验证申请
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequest'
+
+  /api/verifications/requests/{requestId}/objects:
+    get:
+      tags: [需求确认与验证]
+      summary: 获取申请关联的对象列表
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VerificationRequestObject'
+    post:
+      tags: [需求确认与验证]
+      summary: 添加申请关联对象
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequestObject'
+      responses:
+        '200':
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationRequestObject'
+
+  /api/verifications/reviews:
+    get:
+      tags: [需求确认与验证]
+      summary: 获取评审列表
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VerificationReview'
+    post:
+      tags: [需求确认与验证]
+      summary: 创建评审
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationReview'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationReview'
+
+  /api/verifications/reviews/{reviewId}:
+    put:
+      tags: [需求确认与验证]
+      summary: 更新评审信息
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationReview'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationReview'
+
+  /api/verifications/reviews/{reviewId}/objects:
+    get:
+      tags: [需求确认与验证]
+      summary: 获取评审关联对象
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VerificationReviewObject'
+    post:
+      tags: [需求确认与验证]
+      summary: 添加评审关联对象
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationReviewObject'
+      responses:
+        '200':
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationReviewObject'
+
+  # --- 变更管理 (Requirement Change) ---
+  /api/requirement-changes:
+    get:
+      tags: [变更管理]
+      summary: 获取变更申请列表
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequirementChangeRequest'
+    post:
+      tags: [变更管理]
+      summary: 创建变更申请
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequirementChangeRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementChangeRequest'
+
+  /api/requirement-changes/{changeId}:
+    put:
+      tags: [变更管理]
+      summary: 更新变更申请
+      parameters:
+        - name: changeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequirementChangeRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementChangeRequest'
+
+  /api/requirement-changes/{changeId}/objects:
+    get:
+      tags: [变更管理]
+      summary: 获取变更关联对象
+      parameters:
+        - name: changeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequirementChangeObject'
+    post:
+      tags: [变更管理]
+      summary: 添加变更关联对象
+      parameters:
+        - name: changeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequirementChangeObject'
+      responses:
+        '200':
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementChangeObject'
+
+  /api/requirement-changes/objects/{id}:
+    delete:
+      tags: [变更管理]
+      summary: 删除变更关联对象
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: 删除成功
+
 components:
   schemas:
     Requirement:
@@ -187,3 +519,266 @@ components:
         docConfig: "{\"attributes\":[{\"name\":\"文档名称\",\"value\":\"SRS\"}]}"
         projectMembers: "[{\"id\":\"m1\",\"name\":\"Kevin Wu\"}]"
         customTypes: "[{\"id\":\"type-status\",\"name\":\"进行状态\"}]"
+
+    # 1. 确认/验证申请表 verification_requests
+    VerificationRequest:
+      type: object
+      description: 需求确认/验证申请单
+      properties:
+        requestId:
+          type: integer
+          format: int64
+          description: 主键 ID
+        requestName:
+          type: string
+          description: 申请名称
+        requestType:
+          type: string
+          enum: [confirmation, verification]
+          description: 申请类型
+        projectId:
+          type: integer
+          format: int64
+          description: 项目 ID
+        documentId:
+          type: integer
+          format: int64
+          description: 文档 ID
+        dalLevel:
+          type: string
+          enum: [A, B, C, D, E]
+          description: DAL 等级
+        status:
+          type: string
+          default: draft
+          enum: [draft, pending, in_progress, approved, rejected, completed]
+          description: 状态 (如 draft, pending, approved, completed)
+        ownerName:
+          type: string
+          description: 确认/验证人
+        method:
+          type: string
+          description: 确认/验证方法
+        description:
+          type: string
+          description: 描述
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        requestName: "概要设计需求规划-确认申请"
+        requestType: "confirmation"
+        projectId: 10001
+        documentId: 20001
+        dalLevel: "B"
+        status: "pending"
+        ownerName: "系统管理员"
+        method: "评审确认"
+        description: "对概要设计阶段需求进行确认"
+
+    # 2. 确认/验证申请对象表 verification_request_objects
+    VerificationRequestObject:
+      type: object
+      description: 申请单关联对象
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        requestId:
+          type: integer
+          format: int64
+          description: 申请 ID
+        objectId:
+          type: integer
+          format: int64
+          description: 关联对象 ID
+        note:
+          type: string
+          description: 备注
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        requestId: 1
+        objectId: 30001
+        note: "关键章节优先检查"
+
+    # 3. 确认/验证评审表 verification_reviews
+    VerificationReview:
+      type: object
+      description: 验证/确认评审单
+      properties:
+        reviewId:
+          type: integer
+          format: int64
+          description: 主键 ID
+        requestId:
+          type: integer
+          format: int64
+          description: 关联申请 ID
+        reviewName:
+          type: string
+          description: 评审名称
+        reviewDescription:
+          type: string
+          description: 评审描述
+        projectId:
+          type: integer
+          format: int64
+          description: 项目 ID
+        documentId:
+          type: integer
+          format: int64
+          description: 文档 ID
+        managerName:
+          type: string
+          description: 需求主管
+        reviewerName:
+          type: string
+          description: 评审人员
+        reviewResult:
+          type: string
+          enum: [PASS, FAIL, REVISE]
+          description: 评审结果
+        dalLevel:
+          type: string
+          enum: [A, B, C, D, E]
+          description: DAL 等级
+        reviewedAt:
+          type: string
+          format: date-time
+          description: 评审时间
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        requestId: 1
+        reviewName: "概要设计需求规划-确认评审"
+        reviewDescription: "评审确认申请内容是否可通过"
+        projectId: 10001
+        documentId: 20001
+        managerName: "系统管理员"
+        reviewerName: "张三, 李四"
+        reviewResult: "PASS"
+        dalLevel: "B"
+        reviewedAt: "2026-01-15T14:30:00"
+
+    # 4. 确认/验证评审对象表 verification_review_objects
+    VerificationReviewObject:
+      type: object
+      description: 评审单关联对象
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        reviewId:
+          type: integer
+          format: int64
+          description: 评审 ID
+        objectId:
+          type: integer
+          format: int64
+          description: 关联对象 ID
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        reviewId: 1
+        objectId: 30001
+
+    # 5. 需求变更申请表 requirement_change_requests
+    RequirementChangeRequest:
+      type: object
+      description: 需求变更申请 (CR)
+      properties:
+        changeId:
+          type: integer
+          format: int64
+          description: 主键 ID
+        changeName:
+          type: string
+          description: 变更名称
+        changeReason:
+          type: string
+          description: 变更原因
+        changeDescription:
+          type: string
+          description: 变更描述
+        projectId:
+          type: integer
+          format: int64
+          description: 项目 ID
+        documentId:
+          type: integer
+          format: int64
+          description: 文档 ID
+        executorName:
+          type: string
+          description: 执行人
+        executionTime:
+          type: string
+          format: date-time
+          description: 执行时间
+        status:
+          type: string
+          default: pending
+          enum: [pending, processing, completed, rejected]
+          description: 状态
+        dalLevel:
+          type: string
+          enum: [A, B, C, D, E]
+          description: DAL 等级
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      example:
+        changeName: "需求条目属性及标识变更"
+        changeReason: "内部优化"
+        changeDescription: "修改部分需求的标识符格式"
+        projectId: 10001
+        documentId: 20001
+        executorName: "软件组人员"
+        executionTime: "2026-01-01T00:00:00"
+        status: "processing"
+        dalLevel: "B"
+
+    # 6. 需求变更关联对象表 requirement_change_objects
+    RequirementChangeObject:
+      type: object
+      description: 变更涉及的对象
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        changeId:
+          type: integer
+          format: int64
+          description: 变更申请 ID
+        objectId:
+          type: integer
+          format: int64
+          description: 关联对象 ID
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      example:
+        changeId: 1
+        objectId: 30001
