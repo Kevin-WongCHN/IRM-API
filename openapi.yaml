@@ -381,37 +381,6 @@ paths:
         '204':
           description: 删除成功
 
-  /api/documents/{documentId}/import/docx:
-    post:
-      tags: [需求定义]
-      summary: 导入Word文档
-      description: 将Word文档内容导入到指定文档中
-      parameters:
-        - name: documentId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: 导入成功
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ReqObject'
-
   # ==========================================
   # 对象(需求条目)管理 API (需求定义)
   # ==========================================
@@ -1373,9 +1342,3 @@ components:
       example:
         changeId: 1
         objectId: 30001
-        childOrder:
-          type: integer
-        editable:
-          type: boolean
-        objectProperties:
-          type: object
