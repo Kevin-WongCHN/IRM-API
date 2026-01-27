@@ -485,6 +485,270 @@ paths:
         '204':
           description: 删除成功
 
+  # ==========================================
+  # 在线评审 API (新增部分)
+  # ==========================================
+  /api/reviews/checklist-templates:
+    get:
+      tags: [在线评审]
+      summary: 获取检查项模板
+      description: 获取14项标准评审检查项模板
+      responses:
+        '200':
+          description: 成功返回检查项列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewChecklistTemplate'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/reviews/requirement:
+    get:
+      tags: [在线评审]
+      summary: 获取需求评审记录
+      description: 根据项目ID、文档ID、需求ID获取评审记录
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 项目ID
+        - name: documentId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 文档ID
+        - name: requirementId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 需求ID
+      responses:
+        '200':
+          description: 成功返回评审记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementReview'
+        '404':
+          description: 未找到评审记录
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "评审记录不存在"
+
+  /api/reviews/{reviewId}/items:
+    get:
+      tags: [在线评审]
+      summary: 获取评审项结果
+      description: 根据评审ID获取所有评审项结果
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 评审记录ID
+      responses:
+        '200':
+          description: 成功返回评审项列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewItemResult'
+        '404':
+          description: 评审记录不存在
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "评审记录不存在"
+
+  /api/reviews/items:
+    get:
+      tags: [在线评审]
+      summary: 按需求获取评审项
+      description: 根据项目ID、文档ID、需求ID获取评审项结果
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 项目ID
+        - name: documentId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 文档ID
+        - name: requirementId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 需求ID
+      responses:
+        '200':
+          description: 成功返回评审项列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewItemResult'
+
+  /api/reviews/save:
+    post:
+      tags: [在线评审]
+      summary: 保存评审结果
+      description: 保存或更新需求评审结果
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 项目ID
+        - name: documentId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 文档ID
+        - name: requirementId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 需求ID
+        - name: reviewerId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 评审人ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ReviewItemResult'
+            example:
+              - checklistId: 1
+                status: "pass"
+              - checklistId: 2
+                status: "fail"
+      responses:
+        '200':
+          description: 保存成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementReview'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/reviews/project/{projectId}:
+    get:
+      tags: [在线评审]
+      summary: 获取项目所有评审
+      description: 获取指定项目的所有评审记录
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 项目ID
+      responses:
+        '200':
+          description: 成功返回评审列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequirementReview'
+
+  /api/reviews/initialize:
+    post:
+      tags: [在线评审]
+      summary: 初始化评审
+      description: 为需求创建新的评审记录
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 项目ID
+        - name: documentId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 文档ID
+        - name: requirementId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 需求ID
+        - name: reviewerId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 评审人ID
+      responses:
+        '200':
+          description: 初始化成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementReview'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/reviews/statistics/{projectId}:
+    get:
+      tags: [在线评审]
+      summary: 获取评审统计
+      description: 获取项目的评审统计信息
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 项目ID
+      responses:
+        '200':
+          description: 成功返回统计信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewStatistics'
+
   # --- 需求确认/验证 (Verification/Confirmation) ---
   /api/verifications/requests:
     get:
@@ -841,8 +1105,8 @@ components:
       description: 资源未找到 (404)
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     InternalServerError:
       description: 服务器内部错误 (500)
       content:
@@ -866,6 +1130,185 @@ components:
         details:
           type: string
           description: 详细错误堆栈或提示
+
+    # ----------------------
+    # 在线评审相关 Schema (新增部分)
+    # ----------------------
+    ReviewChecklistTemplate:
+      type: object
+      description: 评审检查项模板
+      properties:
+        checklistId:
+          type: integer
+          format: int64
+          description: 检查项ID
+        itemOrder:
+          type: integer
+          description: 显示顺序
+        zhContent:
+          type: string
+          description: 中文内容
+        enContent:
+          type: string
+          description: 英文内容
+        isRequired:
+          type: boolean
+          description: 是否必填
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+      example:
+        checklistId: 1
+        itemOrder: 1
+        zhContent: "需求是否清晰明确？"
+        enContent: "Is the requirement clear and unambiguous?"
+        isRequired: true
+        createdAt: "2026-01-15T10:00:00Z"
+
+    ReviewItemResult:
+      type: object
+      description: 评审项结果
+      properties:
+        resultId:
+          type: integer
+          format: int64
+          description: 结果ID
+        reviewId:
+          type: integer
+          format: int64
+          description: 评审记录ID
+        projectId:
+          type: string
+          description: 项目ID
+        documentId:
+          type: string
+          description: 文档ID
+        requirementId:
+          type: string
+          description: 需求ID
+        checklistId:
+          type: integer
+          format: int64
+          description: 检查项ID
+        status:
+          type: string
+          enum: [pending, pass, fail]
+          description: 评审状态
+          default: pending
+        reviewedAt:
+          type: string
+          format: date-time
+          description: 评审时间
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+      example:
+        resultId: 1
+        reviewId: 100
+        projectId: "project-001"
+        documentId: "doc-001"
+        requirementId: "req-001"
+        checklistId: 1
+        status: "pass"
+        reviewedAt: "2026-01-15T14:30:00Z"
+        createdAt: "2026-01-15T14:30:00Z"
+
+    RequirementReview:
+      type: object
+      description: 需求评审记录
+      properties:
+        reviewId:
+          type: integer
+          format: int64
+          description: 评审记录ID
+        projectId:
+          type: string
+          description: 项目ID
+        documentId:
+          type: string
+          description: 文档ID
+        requirementId:
+          type: string
+          description: 需求ID
+        reviewerId:
+          type: string
+          description: 评审人ID
+        overallStatus:
+          type: string
+          enum: [pending, in-progress, completed]
+          description: 整体状态
+          default: pending
+        reviewResult:
+          type: string
+          enum: [pass, fail]
+          description: 评审结果
+        passCount:
+          type: integer
+          description: 通过数
+          default: 0
+        failCount:
+          type: integer
+          description: 不通过数
+          default: 0
+        reviewedAt:
+          type: string
+          format: date-time
+          description: 评审完成时间
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新时间
+      example:
+        reviewId: 100
+        projectId: "project-001"
+        documentId: "doc-001"
+        requirementId: "req-001"
+        reviewerId: "user001"
+        overallStatus: "completed"
+        reviewResult: "pass"
+        passCount: 14
+        failCount: 0
+        reviewedAt: "2026-01-15T14:30:00Z"
+        createdAt: "2026-01-15T10:00:00Z"
+        updatedAt: "2026-01-15T14:30:00Z"
+
+    ReviewStatistics:
+      type: object
+      description: 评审统计信息
+      properties:
+        totalReviews:
+          type: integer
+          format: int64
+          description: 总评审数
+        completedReviews:
+          type: integer
+          format: int64
+          description: 已完成评审数
+        passReviews:
+          type: integer
+          format: int64
+          description: 通过评审数
+        failReviews:
+          type: integer
+          format: int64
+          description: 不通过评审数
+        inProgressReviews:
+          type: integer
+          format: int64
+          description: 进行中评审数
+      example:
+        totalReviews: 50
+        completedReviews: 30
+        passReviews: 25
+        failReviews: 5
+        inProgressReviews: 20
 
     # ----------------------
     # 项目 (Project)
